@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+build/
+dist/
+
+# UV / virtual environments
+.venv/
+venv/
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Test cache (downloaded models/audio/video)
+tests/.cache/
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Whisperfile sidecar files (just in case)
+*.txt
+*.vtt
+*.lrc
+*.csv
+*.json
+*.wts
