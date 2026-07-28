@@ -23,12 +23,20 @@ def extract_audio(video_path: Path, output_wav: Path | None = None) -> Path:
         os.close(fd)
 
     log_info(f"Extracting audio from '{video_path.name}'...")
+    # Use -ss 0 before the input to force ffmpeg to start at timestamp 0.
+    # Some containers (e.g. MKV files with negative start times) can produce
+    # WAV files whose headers are not readable by whisperfile's decoder.
     run_command(
         [
             ffmpeg,
             "-y",
+            "-ss",
+            "0",
             "-i",
             video_path,
+            "-vn",
+            "-map",
+            "0:a:0",
             "-ar",
             "16000",
             "-ac",
