@@ -64,9 +64,9 @@ def transcribe_video(
     """Transcribe a video file and return the path to the generated SRT."""
     model_path = ensure_model(model_alias)
 
-    fd, audio_wav = tempfile.mkstemp(suffix=".wav", prefix="suburn_audio_")
+    fd, audio_mp3 = tempfile.mkstemp(suffix=".mp3", prefix="suburn_audio_")
     os.close(fd)
-    audio_wav_path = Path(audio_wav)
+    audio_mp3_path = Path(audio_mp3)
 
     fd, srt_prefix = tempfile.mkstemp(prefix="suburn_subs_")
     os.close(fd)
@@ -74,9 +74,9 @@ def transcribe_video(
     generated_srt = Path(f"{srt_prefix_path}.srt")
 
     try:
-        extract_audio(video_path, audio_wav_path)
+        extract_audio(video_path, audio_mp3_path)
         transcribe_audio(
-            audio_wav_path,
+            audio_mp3_path,
             model_path,
             srt_prefix_path,
             language=language,
@@ -90,7 +90,7 @@ def transcribe_video(
             return output_srt
         return generated_srt
     finally:
-        audio_wav_path.unlink(missing_ok=True)
+        audio_mp3_path.unlink(missing_ok=True)
         # Clean up any whisperfile sidecar files (txt, vtt, etc.) it may have created.
         for ext in (".txt", ".vtt", ".lrc", ".csv", ".json", ".wts"):
             Path(f"{srt_prefix_path}{ext}").unlink(missing_ok=True)

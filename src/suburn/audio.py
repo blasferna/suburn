@@ -6,32 +6,32 @@ from pathlib import Path
 from suburn.utils import log_info, require_command, run_command
 
 
-def extract_audio(video_path: Path, output_wav: Path | None = None) -> Path:
-    """Extract audio from a video file into a 16kHz mono WAV for whisperfile.
+def extract_audio(video_path: Path, output_audio: Path | None = None) -> Path:
+    """Extract audio from a video file into a 16kHz mono MP3 for whisperfile.
+
+    Whisperfile's WAV decoder is fragile with certain inputs (e.g. MKV files
+    with negative start times or non-monotonic timestamps), so we feed it an
+    MP3 instead. MP3 is reliably decoded by whisperfile and avoids the
+    ``failed to read pcm frames`` error.
 
     If no output path is provided, a temporary file is created.
     """
     ffmpeg = require_command("ffmpeg")
 
-    if output_wav is None:
-        suffix = f"_{video_path.stem}.wav"
+    if output_audio is None:
+        suffix = f"_{video_path.stem}.mp3"
         fd, tmp_path = tempfile.mkstemp(suffix=suffix, prefix="suburn_audio_")
-        output_wav = Path(tmp_path)
+        output_audio = Path(tmp_path)
         # Close the file descriptor; ffmpeg will write to the path.
         import os
 
         os.close(fd)
 
     log_info(f"Extracting audio from '{video_path.name}'...")
-    # Use -ss 0 before the input to force ffmpeg to start at timestamp 0.
-    # Some containers (e.g. MKV files with negative start times) can produce
-    # WAV files whose headers are not readable by whisperfile's decoder.
     run_command(
         [
             ffmpeg,
             "-y",
-            "-ss",
-            "0",
             "-i",
             video_path,
             "-vn",
@@ -41,9 +41,9 @@ def extract_audio(video_path: Path, output_wav: Path | None = None) -> Path:
             "16000",
             "-ac",
             "1",
-            "-c:a",
-            "pcm_s16le",
-            output_wav,
+            "-b:a",
+            "128k",
+            output_audio,
         ]
     )
-    return output_wav
+    return output_audio
